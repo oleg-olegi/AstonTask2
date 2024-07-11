@@ -27,7 +27,6 @@ public class DataSourceUtil {
             e.printStackTrace();
         }
     }
-
     public static DataSource getDataSource() {
         return dataSource;
     }
