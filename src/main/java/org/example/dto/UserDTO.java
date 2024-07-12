@@ -8,6 +8,16 @@ public class UserDTO {
     private String email;
     private List<PostDTO> posts;
 
+    public UserDTO() {
+    }
+
+    public UserDTO(Long id, String name, String email) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+    }
+
+
     public Long getId() {
         return id;
     }

@@ -9,6 +9,12 @@ public class User {
     private String email;
     private List<Post> posts; // OneToMany relationship
 
+    public User() {
+    }
+
+    public User(long l, String alice, String mail) {
+    }
+
     public String getName() {
         return name;
     }
