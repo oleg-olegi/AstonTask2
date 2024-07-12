@@ -28,7 +28,7 @@ public class UserServlet extends HttpServlet {
     private static final Logger logger = LoggerFactory.getLogger(UserServlet.class);
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         this.userService = new UserService(new UserDAO(DataSourceUtil.getDataSource()));
     }
 
