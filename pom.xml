@@ -117,10 +117,54 @@
             <artifactId>slf4j-simple</artifactId>
             <version>1.6.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.12</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>my-rest-service</finalName>
         <plugins>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>jcc-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>org/example/dao/PostDaiInterface.class</exclude>
+                        <exclude>org/example/dao/UserDaoInterface.class</exclude>
+                        <exclude>org/example/dto/PostDTO.class</exclude>
+                        <exclude>org/example/dto/UserDTO.class</exclude>
+                        <exclude>org/example/model/**</exclude>
+                        <exclude>org/example/mapper/**</exclude>
+                        <exclude>org/example/DataSourceUtil/**</exclude>
+
+                    </excludes>
+                </configuration>
+                <!--                <reportSets>-->
+                <!--                    <reportSet>-->
+                <!--                        <reports>-->
+                <!--                            &lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
+                <!--                            <report>report</report>-->
+                <!--                        </reports>-->
+                <!--                    </reportSet>-->
+                <!--                </reportSets>-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
