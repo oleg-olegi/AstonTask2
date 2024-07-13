@@ -175,9 +175,7 @@ public class UserServletTest {
         when(request.getPathInfo()).thenReturn("/" + userId);
         doThrow(SQLException.class).when(userService).deleteUser(userId);
 
-        assertThrows(ServletException.class, () -> {
-            userServlet.doDelete(request, response);
-        });
+        assertThrows(ServletException.class, () -> userServlet.doDelete(request, response));
     }
 
     @Test
@@ -227,9 +225,7 @@ public class UserServletTest {
         when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestBody)));
         doThrow(SQLException.class).when(userService).updateUser(any(UserDTO.class));
 
-        assertThrows(ServletException.class, () -> {
-            userServlet.doPut(request, response);
-        });
+        assertThrows(ServletException.class, () -> userServlet.doPut(request, response));
     }
 
     @Test
