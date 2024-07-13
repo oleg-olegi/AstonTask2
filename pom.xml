@@ -152,8 +152,7 @@
                         <exclude>org/example/dto/UserDTO.class</exclude>
                         <exclude>org/example/model/**</exclude>
                         <exclude>org/example/mapper/**</exclude>
-                        <exclude>org/example/DataSourceUtil/**</exclude>
-
+                        <exclude>org/example/util/**</exclude>
                     </excludes>
                 </configuration>
                 <!--                <reportSets>-->
