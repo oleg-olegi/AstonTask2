@@ -22,23 +22,18 @@ import static org.mockito.Mockito.*;
 public class PostServletTest {
     @Mock
     private PostService postService;
-
     @Mock
     private HttpServletRequest request;
-
     @Mock
     private HttpServletResponse response;
-
     @InjectMocks
     private PostServlet postServlet;
-
     private final Gson gson = new Gson();
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
-
 
     @Test
     public void testInit() throws ServletException {
@@ -68,32 +63,24 @@ public class PostServletTest {
 
     @Test
     public void testDoGetAllPosts() throws ServletException, IOException, SQLException {
-
         // Set up StringWriter and PrintWriter for capturing the response
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
-
         // Mock the behavior of the request and response
         when(request.getPathInfo()).thenReturn(null);
         when(response.getWriter()).thenReturn(printWriter);
-
         // Prepare the list of posts to be returned by the service
         PostDTO post1 = new PostDTO(1L, "Title1", "Content1");
         PostDTO post2 = new PostDTO(2L, "Title2", "Content2");
         List<PostDTO> posts = Arrays.asList(post1, post2);
-
         // Mock the behavior of the postService
         when(postService.getAllPosts()).thenReturn(posts);
-
         // Call the doGet method of the servlet
         postServlet.doGet(request, response);
-
         // Verify that the service method was called once
         verify(postService, times(1)).getAllPosts();
-
         // Prepare the expected JSON response
         String expectedJson = gson.toJson(posts);
-
         // Verify the response headers and content
         verify(response).setContentType("application/json");
         verify(response).setCharacterEncoding("UTF-8");
@@ -131,17 +118,12 @@ public class PostServletTest {
     public void testDoPost() throws IOException, ServletException, SQLException {
         BufferedReader reader = mock(BufferedReader.class);
         when(request.getReader()).thenReturn(reader);
-
         when(reader.readLine()).thenReturn("{\"title\": \"Title\", \"content\": \"Content\"}", (String) null);
-
         ArgumentCaptor<PostDTO> postCaptor = ArgumentCaptor.forClass(PostDTO.class);
-
         postServlet.doPost(request, response);
-
         verify(postService).savePost(postCaptor.capture());
         assertEquals("Title", postCaptor.getValue().getTitle());
         assertEquals("Content", postCaptor.getValue().getContent());
-
         verify(response).setStatus(HttpServletResponse.SC_CREATED);
     }
 
@@ -207,10 +189,8 @@ public class PostServletTest {
     public void testDoPutWithNullPathInfo() throws ServletException, IOException {
         // Set up the scenario where pathInfo is null
         when(request.getPathInfo()).thenReturn(null);
-
-        // Call doDelete method
+        // Call doPut method
         postServlet.doPut(request, response);
-
         // Verify that sendError was called with SC_BAD_REQUEST and the correct message
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
         // Verify that setStatus was not called
@@ -221,32 +201,25 @@ public class PostServletTest {
     public void testDoPutWithSlashPathInfo() throws ServletException, IOException {
         // Set up the scenario where pathInfo is null
         when(request.getPathInfo()).thenReturn("/");
-
-        // Call doDelete method
+        // Call doPut method
         postServlet.doPut(request, response);
-
         // Verify that sendError was called with SC_BAD_REQUEST and the correct message
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
         // Verify that setStatus was not called
         verify(response, never()).setStatus(anyInt());
     }
 
-
     @Test
     public void testDoPutMissingPostId() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn(null);
-
         postServlet.doPut(request, response);
-
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
     }
 
     @Test
     public void testDoPutInvalidPostIdFormat() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn("/invalidId");
-
         postServlet.doPut(request, response);
-
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID format.");
     }
 
@@ -310,7 +283,6 @@ public class PostServletTest {
         BufferedReader reader = new BufferedReader(new StringReader(validPostJson));
         when(request.getReader()).thenReturn(reader);
         doThrow(new SQLException("Database error")).when(postService).updatePost(any(PostDTO.class));
-
         assertThrows(ServletException.class, () -> postServlet.doPut(request, response));
     }
 
@@ -320,9 +292,7 @@ public class PostServletTest {
         HttpServletRequest request = mock(HttpServletRequest.class);
         HttpServletResponse response = mock(HttpServletResponse.class);
         when(request.getPathInfo()).thenReturn("/1");
-
         postServlet.doDelete(request, response);
-
         verify(postService).deletePost(1L);
         verify(response).setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
@@ -331,10 +301,8 @@ public class PostServletTest {
     public void testDoDeleteWithNullPathInfo() throws ServletException, IOException {
         // Set up the scenario where pathInfo is null
         when(request.getPathInfo()).thenReturn(null);
-
         // Call doDelete method
         postServlet.doDelete(request, response);
-
         // Verify that sendError was called with SC_BAD_REQUEST and the correct message
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
         // Verify that setStatus was not called
@@ -345,10 +313,8 @@ public class PostServletTest {
     public void testDoDeleteWithSlashPathInfo() throws ServletException, IOException {
         // Set up the scenario where pathInfo is slash
         when(request.getPathInfo()).thenReturn("/");
-
         // Call doDelete method
         postServlet.doDelete(request, response);
-
         // Verify that sendError was called with SC_BAD_REQUEST and the correct message
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
         // Verify that setStatus was not called
@@ -358,27 +324,21 @@ public class PostServletTest {
     @Test
     public void testDoDeleteMissingPostId() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn(null);
-
         postServlet.doDelete(request, response);
-
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID is required.");
     }
 
     @Test
     public void testDoDeleteInvalidPostIdFormat() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn("/invalidId");
-
         postServlet.doDelete(request, response);
-
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid user ID format.");
     }
 
     @Test
     public void testDoDeleteSuccess() throws ServletException, IOException, SQLException {
         when(request.getPathInfo()).thenReturn("/1");
-
         postServlet.doDelete(request, response);
-
         verify(postService).deletePost(1L);
         verify(response).setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
@@ -387,7 +347,6 @@ public class PostServletTest {
     public void testDoDeleteSQLException() throws SQLException {
         when(request.getPathInfo()).thenReturn("/1");
         doThrow(new SQLException("Database error")).when(postService).deletePost(1L);
-
         assertThrows(ServletException.class, () -> postServlet.doDelete(request, response));
     }
 }
