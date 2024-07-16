@@ -8,6 +8,11 @@ public class Post {
     private String content;
     private User user; // ManyToOne relationship
 
+    public Post() {}
+
+    public Post(long id, String title, String content, User user) {
+    }
+
     public Long getId() {
         return id;
     }

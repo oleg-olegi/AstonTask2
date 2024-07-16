@@ -50,8 +50,6 @@ public class UserServletTest {
 
     @Test
     public void testDoGetAllUsers() throws ServletException, IOException, SQLException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
@@ -74,8 +72,6 @@ public class UserServletTest {
 
     @Test
     public void testDoGetUserById() throws ServletException, IOException, SQLException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
 
@@ -95,8 +91,6 @@ public class UserServletTest {
 
     @Test
     public void testDoPost() throws ServletException, IOException, SQLException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
         String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}";
 
         BufferedReader reader = new BufferedReader(new StringReader(userJson));
@@ -110,8 +104,6 @@ public class UserServletTest {
 
     @Test
     public void testDoPut() throws ServletException, IOException, SQLException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
         String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}";
 
         BufferedReader reader = new BufferedReader(new StringReader(userJson));
@@ -126,8 +118,6 @@ public class UserServletTest {
 
     @Test
     public void testDoDelete() throws ServletException, IOException, SQLException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
 
         when(request.getPathInfo()).thenReturn("/1");
 
@@ -139,8 +129,6 @@ public class UserServletTest {
 
     @Test
     public void testDoDeleteInvalidIdFormat() throws ServletException, IOException {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        HttpServletResponse response = mock(HttpServletResponse.class);
 
         when(request.getPathInfo()).thenReturn("/abc");
 

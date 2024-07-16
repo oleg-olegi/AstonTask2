@@ -12,7 +12,7 @@ public class User {
     public User() {
     }
 
-    public User(long l, String alice, String mail) {
+    public User(long l, String name, String mail) {
     }
 
     public String getName() {
