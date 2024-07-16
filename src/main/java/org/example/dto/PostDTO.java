@@ -6,6 +6,13 @@ public class PostDTO {
     private String content;
     private Long userId;
 
+    public PostDTO() {
+    }
+
+    public PostDTO(Long id, String title, String content) {
+    }
+
+
     public Long getId() {
         return id;
     }
