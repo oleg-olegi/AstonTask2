@@ -6,9 +6,11 @@ public class Post {
     private Long id;
     private String title;
     private String content;
+
     private User user; // ManyToOne relationship
 
-    public Post() {}
+    public Post() {
+    }
 
     public Post(long id, String title, String content, User user) {
     }

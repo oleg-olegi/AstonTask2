@@ -76,7 +76,6 @@ public class PostDAO implements PostDaoInterface {
             stmt.setString(2, post.getContent());
             stmt.setLong(3, post.getUser().getId());
             stmt.executeUpdate();
-
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
                 post.setId(rs.getLong(1));

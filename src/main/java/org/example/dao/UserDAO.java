@@ -1,5 +1,6 @@
 package org.example.dao;
 
+import org.example.model.Post;
 import org.example.model.User;
 
 import javax.sql.DataSource;
@@ -19,37 +20,66 @@ public class UserDAO implements UserDaoInterface {
     @Override
     public User getById(Long id) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement("SELECT * FROM users WHERE id = ?");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "SELECT u.id, u.name, u.email, p.id as post_id, p.title as post_title, p.content as post_content " +
+                            "FROM users u LEFT JOIN posts p ON u.id = p.user_id WHERE u.id = ?");
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setName(rs.getString("name"));
-                user.setEmail(rs.getString("email"));
-                // getPosts(user); // get posts for user
-                return user;
+            User user = null;
+            List<Post> posts = new ArrayList<>();
+            while (rs.next()) {
+                if (user == null) {
+                    user = new User();
+                    user.setId(rs.getLong("id"));
+                    user.setName(rs.getString("name"));
+                    user.setEmail(rs.getString("email"));
+                }
+                if (rs.getLong("post_id") != 0) {
+                    Post post = new Post();
+                    post.setId(rs.getLong("post_id"));
+                    post.setTitle(rs.getString("post_title"));
+                    post.setContent(rs.getString("post_content"));
+                    post.setUser(user); // Связываем пост с пользователем
+                    posts.add(post);
+                }
             }
+            if (user != null) {
+                user.setPosts(posts);
+            }
+            return user;
         }
-        return null;
     }
 
     @Override
     public List<User> getAllUsers() throws SQLException {
-        List<User> users = new ArrayList<>();
         try (Connection connection = dataSource.getConnection()) {
-            Statement stmt = connection.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM users");
+            PreparedStatement stmt = connection.prepareStatement(
+                    "SELECT u.id, u.name, u.email, p.id as post_id, p.title as post_title, p.content as post_content " +
+                            "FROM users u LEFT JOIN posts p ON u.id = p.user_id");
+            ResultSet rs = stmt.executeQuery();
+            List<User> users = new ArrayList<>();
+            User currentUser = null;
             while (rs.next()) {
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setName(rs.getString("name"));
-                user.setEmail(rs.getString("email"));
-                // getPosts(user); // get posts for user
-                users.add(user);
+                Long userId = rs.getLong("id");
+                if (currentUser == null || !currentUser.getId().equals(userId)) {
+                    currentUser = new User();
+                    currentUser.setId(userId);
+                    currentUser.setName(rs.getString("name"));
+                    currentUser.setEmail(rs.getString("email"));
+                    currentUser.setPosts(new ArrayList<>());
+                    users.add(currentUser);
+                }
+                if (rs.getLong("post_id") != 0) {
+                    Post post = new Post();
+                    post.setId(rs.getLong("post_id"));
+                    post.setTitle(rs.getString("post_title"));
+                    post.setContent(rs.getString("post_content"));
+                    post.setUser(currentUser);
+                    currentUser.getPosts().add(post);
+                }
             }
+            return users;
         }
-        return users;
     }
 
     @Override

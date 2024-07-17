@@ -49,7 +49,7 @@ public class PostServletTest {
 
     @Test
     public void testDoGetSinglePost() throws IOException, ServletException, SQLException {
-        PostDTO post = new PostDTO(1L, "Title", "Content");
+        PostDTO post = new PostDTO(1L, "Title", "Content", 1L);
         when(postService.getPostById(1L)).thenReturn(post);
 
         HttpServletRequest request = mock(HttpServletRequest.class);
@@ -78,8 +78,8 @@ public class PostServletTest {
         when(response.getWriter()).thenReturn(printWriter);
 
         // Prepare the list of posts to be returned by the service
-        PostDTO post1 = new PostDTO(1L, "Title1", "Content1");
-        PostDTO post2 = new PostDTO(2L, "Title2", "Content2");
+        PostDTO post1 = new PostDTO(1L, "Title1", "Content1", 1L);
+        PostDTO post2 = new PostDTO(2L, "Title2", "Content2", 1L);
         List<PostDTO> posts = Arrays.asList(post1, post2);
 
         // Mock the behavior of the postService
@@ -109,8 +109,8 @@ public class PostServletTest {
         when(request.getPathInfo()).thenReturn("/");
         when(response.getWriter()).thenReturn(printWriter);
         // Prepare the list of posts to be returned by the service
-        PostDTO post1 = new PostDTO(1L, "Title1", "Content1");
-        PostDTO post2 = new PostDTO(2L, "Title2", "Content2");
+        PostDTO post1 = new PostDTO(1L, "Title1", "Content1", 1L);
+        PostDTO post2 = new PostDTO(2L, "Title2", "Content2", 1L);
         List<PostDTO> posts = Arrays.asList(post1, post2);
         // Mock the behavior of the postService
         when(postService.getAllPosts()).thenReturn(posts);
