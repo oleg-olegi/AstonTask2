@@ -9,7 +9,11 @@ public class PostDTO {
     public PostDTO() {
     }
 
-    public PostDTO(Long id, String title, String content) {
+    public PostDTO(Long id, String title, String content, Long userId) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.userId = userId;
     }
 
 
