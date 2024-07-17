@@ -18,10 +18,14 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Testcontainers
 public class UserDAOTest {
@@ -248,6 +252,41 @@ public class UserDAOTest {
         Post postA = retrievedUser2.getPosts().get(0);
         assertEquals("Post A", postA.getTitle());
         assertEquals("Content A", postA.getContent());
+    }
+
+    @Test
+    public void testSaveWithGeneratedKeys() throws SQLException {
+        User user = new User();
+        user.setName("Alice");
+        user.setEmail("alice@example.com");
+        userDAO.save(user);
+
+        assertNotEquals(0, user.getId(), "User ID should be generated and not zero");
+    }
+
+    @Test
+    public void testSaveWithoutGeneratedKeys() throws SQLException {
+        // Создаем мок UserDAO и ResultSet для проверки случая без сгенерированного ключа
+        DataSource mockDataSource = mock(DataSource.class);
+        UserDAO mockUserDAO = new UserDAO(mockDataSource);
+
+        try (Connection mockConnection = mock(Connection.class);
+             PreparedStatement mockStmt = mock(PreparedStatement.class);
+             ResultSet mockRs = mock(ResultSet.class)) {
+
+            when(mockDataSource.getConnection()).thenReturn(mockConnection);
+            when(mockConnection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
+            when(mockStmt.getGeneratedKeys()).thenReturn(mockRs);
+            when(mockRs.next()).thenReturn(false);
+
+            User mockUser = new User();
+            mockUser.setName("Bob");
+            mockUser.setEmail("bob@example.com");
+
+            mockUserDAO.save(mockUser);
+
+            assertNull(mockUser.getId(), "User ID should remain null if no keys were generated");
+        }
     }
 }
 

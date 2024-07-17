@@ -17,26 +17,25 @@ public class PostDAO implements PostDaoInterface {
 
     @Override
     public Post getById(Long id) throws SQLException {
-        try (Connection connection = dataSource.getConnection()) {
-            PreparedStatement stmt = connection.prepareStatement(
-                    "SELECT p.id, p.title, p.content, p.user_id, u.name as user_name, u.email as user_email " +
-                            "FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = ?");
-            stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                Post post = new Post();
-                post.setId(rs.getLong("id"));
-                post.setTitle(rs.getString("title"));
-                post.setContent(rs.getString("content"));
+        Connection connection = dataSource.getConnection();
+        PreparedStatement stmt = connection.prepareStatement(
+                "SELECT p.id, p.title, p.content, p.user_id, u.name as user_name, u.email as user_email " +
+                        "FROM posts p JOIN users u ON p.user_id = u.id WHERE p.id = ?");
+        stmt.setLong(1, id);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            Post post = new Post();
+            post.setId(rs.getLong("id"));
+            post.setTitle(rs.getString("title"));
+            post.setContent(rs.getString("content"));
 
-                User user = new User();
-                user.setId(rs.getLong("user_id"));
-                user.setName(rs.getString("user_name"));
-                user.setEmail(rs.getString("user_email"));
-                post.setUser(user);
+            User user = new User();
+            user.setId(rs.getLong("user_id"));
+            user.setName(rs.getString("user_name"));
+            user.setEmail(rs.getString("user_email"));
+            post.setUser(user);
 
-                return post;
-            }
+            return post;
         }
         return null;
     }
