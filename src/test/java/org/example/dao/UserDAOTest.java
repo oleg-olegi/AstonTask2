@@ -44,6 +44,8 @@ public class UserDAOTest {
         userDAO = new UserDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(255), email VARCHAR(255))");
+            stmt.execute("CREATE TABLE IF NOT EXISTS posts (id SERIAL PRIMARY KEY, user_id " +
+                    "INTEGER REFERENCES users(id), title VARCHAR(255), content TEXT)");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -51,14 +53,15 @@ public class UserDAOTest {
 
     @BeforeEach
     public void cleanData() {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(postgresContainer.getJdbcUrl());
-        config.setUsername(postgresContainer.getUsername());
-        config.setPassword(postgresContainer.getPassword());
-        config.setDriverClassName("org.postgresql.Driver");
-        dataSource = new HikariDataSource(config);
-        userDAO = new UserDAO(dataSource);
+//        HikariConfig config = new HikariConfig();
+//        config.setJdbcUrl(postgresContainer.getJdbcUrl());
+//        config.setUsername(postgresContainer.getUsername());
+//        config.setPassword(postgresContainer.getPassword());
+//        config.setDriverClassName("org.postgresql.Driver");
+//        dataSource = new HikariDataSource(config);
+//        userDAO = new UserDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+            stmt.execute("DELETE FROM posts");
             stmt.execute("DELETE FROM users");
         } catch (SQLException e) {
             throw new RuntimeException(e);
