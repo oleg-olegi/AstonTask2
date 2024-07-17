@@ -49,6 +49,13 @@ public class UserServletTest {
     }
 
     @Test
+    public void testInit() {
+        UserServlet userServlet = new UserServlet();
+        userServlet.init();
+        assertNotNull(userServlet);
+    }
+
+    @Test
     public void testDoGetAllUsers() throws ServletException, IOException, SQLException {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
@@ -127,6 +134,7 @@ public class UserServletTest {
         verify(userService, times(1)).saveUser(any(UserDTO.class));
         verify(response, times(1)).setStatus(HttpServletResponse.SC_CREATED);
     }
+
     @Test
     public void testDoPostNullEmail() throws ServletException, IOException {
         String missingContentJson = "{\"name\": \"Name with null email\",\"email\": null}";
@@ -176,6 +184,7 @@ public class UserServletTest {
         verify(userService, times(1)).updateUser(any(UserDTO.class));
         verify(response, times(1)).setStatus(HttpServletResponse.SC_CREATED);
     }
+
     @Test
     public void testDoPutNullEmail() throws IOException, ServletException {
         when(request.getPathInfo()).thenReturn("/1");
