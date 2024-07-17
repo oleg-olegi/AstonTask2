@@ -49,6 +49,4 @@ public class UserDTO {
     public void setPosts(List<PostDTO> posts) {
         this.posts = posts;
     }
-
-    // Getters and Setters
 }
