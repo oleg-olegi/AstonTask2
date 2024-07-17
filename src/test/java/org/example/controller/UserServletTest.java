@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.dto.PostDTO;
 import org.example.dto.UserDTO;
 import org.example.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,6 +90,32 @@ public class UserServletTest {
     }
 
     @Test
+    public void testDoGetAllPostsWithSlashPAthInfo() throws ServletException, IOException, SQLException {
+        // Set up StringWriter and PrintWriter for capturing the response
+        StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        // Mock the behavior of the request and response
+        when(request.getPathInfo()).thenReturn("/");
+        when(response.getWriter()).thenReturn(printWriter);
+        // Prepare the list of posts to be returned by the service
+        UserDTO user1 = new UserDTO(1L, "Sarah", "Connor");
+        UserDTO user2 = new UserDTO(2L, "John", "Connor");
+        List<UserDTO> users = Arrays.asList(user1, user2);
+        // Mock the behavior of the postService
+        when(userService.getAllUsers()).thenReturn(users);
+        // Call the doGet method of the servlet
+        userServlet.doGet(request, response);
+        // Verify that the service method was called once
+        verify(userService, times(1)).getAllUsers();
+        // Prepare the expected JSON response
+        String expectedJson = gson.toJson(users);
+        // Verify the response headers and content
+        verify(response).setContentType("application/json");
+        verify(response).setCharacterEncoding("UTF-8");
+        assertEquals(expectedJson, stringWriter.toString().trim());
+    }
+
+    @Test
     public void testDoPost() throws ServletException, IOException, SQLException {
         String userJson = "{\"name\":\"John Doe\",\"email\":\"john.doe@example.com\"}";
 
@@ -148,6 +175,45 @@ public class UserServletTest {
 
         verify(userService, times(1)).updateUser(any(UserDTO.class));
         verify(response, times(1)).setStatus(HttpServletResponse.SC_CREATED);
+    }
+    @Test
+    public void testDoPutNullEmail() throws IOException, ServletException {
+        when(request.getPathInfo()).thenReturn("/1");
+        String missingContentJson = "{\"name\": \"Name with null email\",\"email\": null}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingContentJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPut(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPutEmptyEmail() throws ServletException, IOException {
+        when(request.getPathInfo()).thenReturn("/1");
+        String missingContentJson = "{\"name\": \"Name with empty email\",\"email\": \"\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingContentJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPut(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPutNullName() throws ServletException, IOException {
+        when(request.getPathInfo()).thenReturn("/1");
+        String missingTitleJson = "{\"name\":null, \"email\": \"email with null name\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingTitleJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPut(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPutEmptyName() throws ServletException, IOException {
+        when(request.getPathInfo()).thenReturn("/1");
+        String missingTitleJson = "{\"name\":\"\", \"email\": \"email with empty title\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingTitleJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPut(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
     }
 
     @Test

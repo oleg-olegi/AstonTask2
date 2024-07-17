@@ -12,11 +12,19 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Testcontainers
 public class PostDAOTest {
@@ -96,6 +104,7 @@ public class PostDAOTest {
         assertNotNull(retrievedPost);
         assertEquals("Sample Title", retrievedPost.getTitle());
         assertEquals("Sample Content", retrievedPost.getContent());
+        assertTrue(post.getId() > 0);
     }
 
     @Test
@@ -174,7 +183,7 @@ public class PostDAOTest {
         Post updatedPost = postDAO.getById(savedPost.getId());
         assertEquals("Updated Title", updatedPost.getTitle());
         assertEquals("Updated Content", updatedPost.getContent());
-            }
+    }
 
     @Test
     public void testDeletePost() throws SQLException {
@@ -199,5 +208,51 @@ public class PostDAOTest {
 
         List<Post> postsAfterDeletion = postDAO.getAllPosts();
         assertTrue(postsAfterDeletion.isEmpty());
+    }
+
+    @Test
+    public void testSaveWithGeneratedKeys() throws SQLException {
+        User user = new User();
+        user.setName("Alice");
+        user.setEmail("alice@example.com");
+        userDAO.save(user);
+
+        Post post = new Post();
+        post.setTitle("Generated Keys Title");
+        post.setContent("Generated Keys Content");
+        post.setUser(user);
+        postDAO.save(post);
+
+        assertNotEquals(0, post.getId(), "Post ID should be generated and not zero");
+    }
+
+    @Test
+    public void testSaveWithoutGeneratedKeys() throws SQLException {
+        User user = new User();
+        user.setName("Bob");
+        user.setEmail("bob@example.com");
+        userDAO.save(user);
+        // Создаем мок PostDAO и ResultSet для проверки случая без сгенерированного ключа
+        DataSource mockDataSource = mock(DataSource.class);
+        PostDAO mockPostDAO = new PostDAO(mockDataSource);
+
+        try (Connection mockConnection = mock(Connection.class);
+             PreparedStatement mockStmt = mock(PreparedStatement.class);
+             ResultSet mockRs = mock(ResultSet.class)) {
+
+            when(mockDataSource.getConnection()).thenReturn(mockConnection);
+            when(mockConnection.prepareStatement(anyString(), eq(PreparedStatement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
+            when(mockStmt.getGeneratedKeys()).thenReturn(mockRs);
+            when(mockRs.next()).thenReturn(false);
+
+            Post mockPost = new Post();
+            mockPost.setTitle("No Generated Keys Title");
+            mockPost.setContent("No Generated Keys Content");
+            mockPost.setUser(user);
+
+            mockPostDAO.save(mockPost);
+
+            assertNull(mockPost.getId(), "Post ID should remain null if no keys were generated");
+        }
     }
 }
