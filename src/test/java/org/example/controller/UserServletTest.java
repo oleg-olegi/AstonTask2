@@ -21,8 +21,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -101,6 +100,41 @@ public class UserServletTest {
         verify(userService, times(1)).saveUser(any(UserDTO.class));
         verify(response, times(1)).setStatus(HttpServletResponse.SC_CREATED);
     }
+    @Test
+    public void testDoPostNullEmail() throws ServletException, IOException {
+        String missingContentJson = "{\"name\": \"Name with null email\",\"email\": null}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingContentJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPost(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPostEmptyEmail() throws ServletException, IOException {
+        String missingContentJson = "{\"name\": \"Name with empty email\",\"email\": \"\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingContentJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPost(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPostNullName() throws ServletException, IOException {
+        String missingTitleJson = "{\"name\":null, \"email\": \"email with null name\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingTitleJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPost(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPostEmptyName() throws ServletException, IOException {
+        String missingTitleJson = "{\"name\":\"\", \"email\": \"email with empty title\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(missingTitleJson));
+        when(request.getReader()).thenReturn(reader);
+        userServlet.doPost(request, response);
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
 
     @Test
     public void testDoPut() throws ServletException, IOException, SQLException {
@@ -167,6 +201,34 @@ public class UserServletTest {
     }
 
     @Test
+    public void testDoDeleteWithNullPathInfo() throws ServletException, IOException {
+        // Set up the scenario where pathInfo is null
+        when(request.getPathInfo()).thenReturn(null);
+
+        // Call doDelete method
+        userServlet.doDelete(request, response);
+
+        // Verify that sendError was called with SC_BAD_REQUEST and the correct message
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+        // Verify that setStatus was not called
+        verify(response, never()).setStatus(anyInt());
+    }
+
+    @Test
+    public void testDoDeleteWithSlashPathInfo() throws ServletException, IOException {
+        // Set up the scenario where pathInfo is slash
+        when(request.getPathInfo()).thenReturn("/");
+
+        // Call doDelete method
+        userServlet.doDelete(request, response);
+
+        // Verify that sendError was called with SC_BAD_REQUEST and the correct message
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+        // Verify that setStatus was not called
+        verify(response, never()).setStatus(anyInt());
+    }
+
+    @Test
     public void testDoPutUserIdMissing() throws ServletException, IOException {
         when(request.getPathInfo()).thenReturn(null);
 
@@ -225,5 +287,33 @@ public class UserServletTest {
         userServlet.doPost(request, response);
 
         verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name and Email are required.");
+    }
+
+    @Test
+    public void testDoPutWithNullPathInfo() throws ServletException, IOException {
+        // Set up the scenario where pathInfo is null
+        when(request.getPathInfo()).thenReturn(null);
+
+        // Call doPut method
+        userServlet.doPut(request, response);
+
+        // Verify that sendError was called with SC_BAD_REQUEST and the correct message
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+        // Verify that setStatus was not called
+        verify(response, never()).setStatus(anyInt());
+    }
+
+    @Test
+    public void testDoPutWithSlashPathInfo() throws ServletException, IOException {
+        // Set up the scenario where pathInfo is null
+        when(request.getPathInfo()).thenReturn("/");
+
+        // Call doPut method
+        userServlet.doPut(request, response);
+
+        // Verify that sendError was called with SC_BAD_REQUEST and the correct message
+        verify(response).sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required.");
+        // Verify that setStatus was not called
+        verify(response, never()).setStatus(anyInt());
     }
 }

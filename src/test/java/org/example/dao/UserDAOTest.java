@@ -3,6 +3,8 @@ package org.example.dao;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import jakarta.servlet.ServletException;
+import org.example.model.Post;
 import org.example.model.User;
 
 import org.junit.jupiter.api.AfterAll;
@@ -44,6 +46,8 @@ public class UserDAOTest {
         userDAO = new UserDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(255), email VARCHAR(255))");
+            stmt.execute("CREATE TABLE IF NOT EXISTS posts (id SERIAL PRIMARY KEY, user_id " +
+                    "INTEGER REFERENCES users(id), title VARCHAR(255), content TEXT)");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -51,14 +55,8 @@ public class UserDAOTest {
 
     @BeforeEach
     public void cleanData() {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(postgresContainer.getJdbcUrl());
-        config.setUsername(postgresContainer.getUsername());
-        config.setPassword(postgresContainer.getPassword());
-        config.setDriverClassName("org.postgresql.Driver");
-        dataSource = new HikariDataSource(config);
-        userDAO = new UserDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+            stmt.execute("DELETE FROM posts");
             stmt.execute("DELETE FROM users");
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -167,4 +165,89 @@ public class UserDAOTest {
         List<User> usersAfterDeletion = userDAO.getAllUsers();
         assertTrue(usersAfterDeletion.isEmpty());
     }
+
+    @Test
+    public void testGetUserWithPosts() throws SQLException {
+        // Сохраняем пользователя
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("john.doe@example.com");
+        userDAO.save(user);
+
+        // Сохраняем посты для пользователя
+        try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+            stmt.execute("INSERT INTO posts (user_id, title, content) VALUES (" + user.getId() + ", 'Post 1', 'Content 1')");
+            stmt.execute("INSERT INTO posts (user_id, title, content) VALUES (" + user.getId() + ", 'Post 2', 'Content 2')");
+        }
+
+        // Получаем пользователя с постами
+        User retrievedUser = userDAO.getById(user.getId());
+        assertNotNull(retrievedUser);
+        assertEquals("John Doe", retrievedUser.getName());
+        assertEquals("john.doe@example.com", retrievedUser.getEmail());
+        assertNotNull(retrievedUser.getPosts());
+        assertEquals(2, retrievedUser.getPosts().size());
+
+        // Проверяем посты
+        Post post1 = retrievedUser.getPosts().get(0);
+        assertEquals("Post 1", post1.getTitle());
+        assertEquals("Content 1", post1.getContent());
+
+        Post post2 = retrievedUser.getPosts().get(1);
+        assertEquals("Post 2", post2.getTitle());
+        assertEquals("Content 2", post2.getContent());
+    }
+
+    @Test
+    public void testGetAllUsersWithPosts() throws SQLException {
+        // Сохраняем пользователей и посты
+        User user1 = new User();
+        user1.setName("John Doe");
+        user1.setEmail("john.doe@example.com");
+        userDAO.save(user1);
+
+        User user2 = new User();
+        user2.setName("Sarah Connor");
+        user2.setEmail("sarah.connor@example.com");
+        userDAO.save(user2);
+
+        // Сохраняем посты для пользователей
+        try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+            stmt.execute("INSERT INTO posts (user_id, title, content) VALUES (" + user1.getId() + ", 'Post 1', 'Content 1')");
+            stmt.execute("INSERT INTO posts (user_id, title, content) VALUES (" + user1.getId() + ", 'Post 2', 'Content 2')");
+            stmt.execute("INSERT INTO posts (user_id, title, content) VALUES (" + user2.getId() + ", 'Post A', 'Content A')");
+        }
+
+        // Получаем всех пользователей с постами
+        List<User> users = userDAO.getAllUsers();
+        assertNotNull(users);
+        assertEquals(2, users.size());
+
+        // Проверяем первого пользователя и его посты
+        User retrievedUser1 = users.get(0);
+        assertEquals("John Doe", retrievedUser1.getName());
+        assertEquals("john.doe@example.com", retrievedUser1.getEmail());
+        assertNotNull(retrievedUser1.getPosts());
+        assertEquals(2, retrievedUser1.getPosts().size());
+
+        Post post1 = retrievedUser1.getPosts().get(0);
+        assertEquals("Post 1", post1.getTitle());
+        assertEquals("Content 1", post1.getContent());
+
+        Post post2 = retrievedUser1.getPosts().get(1);
+        assertEquals("Post 2", post2.getTitle());
+        assertEquals("Content 2", post2.getContent());
+
+        // Проверяем второго пользователя и его посты
+        User retrievedUser2 = users.get(1);
+        assertEquals("Sarah Connor", retrievedUser2.getName());
+        assertEquals("sarah.connor@example.com", retrievedUser2.getEmail());
+        assertNotNull(retrievedUser2.getPosts());
+        assertEquals(1, retrievedUser2.getPosts().size());
+
+        Post postA = retrievedUser2.getPosts().get(0);
+        assertEquals("Post A", postA.getTitle());
+        assertEquals("Content A", postA.getContent());
+    }
 }
+
