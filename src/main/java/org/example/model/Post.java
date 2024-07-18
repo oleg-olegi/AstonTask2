@@ -15,7 +15,17 @@ public class Post {
     public Post() {
     }
 
-    public Post(long id, String title, String content, User user) {
+    public Post(Long id, String title, String content, User user) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.user = user;
+    }
+
+    public Post(Long l, String testTitle, String testContent) {
+        this.id = l;
+        this.title = testTitle;
+        this.content = testContent;
     }
 
     public Long getId() {

@@ -13,7 +13,10 @@ public class User {
     public User() {
     }
 
-    public User(long l, String name, String mail) {
+    public User(Long l, String name, String mail) {
+        this.id = l;
+        this.name = name;
+        this.email = mail;
     }
 
     public String getName() {

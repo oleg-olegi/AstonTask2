@@ -11,10 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TagDAO implements TagDAOInterface {
-    private DataSource dataSource;
-
-    public TagDAO() {
-    }
+    private final DataSource dataSource;
 
     public TagDAO(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -39,18 +36,16 @@ public class TagDAO implements TagDAOInterface {
     @Override
     public Tag getById(Long id) throws SQLException {
         String query = "SELECT * FROM tags WHERE id = ?";
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement(query)) {
+        Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query);
             statement.setLong(1, id);
-            try (ResultSet resultSet = statement.executeQuery()) {
-                if (resultSet.next()) {
-                    Tag tag = new Tag();
-                    tag.setId(resultSet.getLong("id"));
-                    tag.setName(resultSet.getString("name"));
-                    return tag;
-                }
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                Tag tag = new Tag();
+                tag.setId(resultSet.getLong("id"));
+                tag.setName(resultSet.getString("name"));
+                return tag;
             }
-        }
         return null;
     }
 
