@@ -1,10 +1,13 @@
 package org.example.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Tag {
     private Long id;
     private String name;
+    private List<Post> posts;
+
 
     public Tag() {
     }
@@ -28,6 +31,14 @@ public class Tag {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 
     @Override

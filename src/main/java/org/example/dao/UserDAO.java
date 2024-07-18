@@ -1,5 +1,6 @@
 package org.example.dao;
 
+import org.example.dao.interfaces.UserDaoInterface;
 import org.example.model.Post;
 import org.example.model.User;
 

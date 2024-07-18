@@ -1,6 +1,8 @@
 package org.example.dao;
 
+import org.example.dao.interfaces.PostDaoInterface;
 import org.example.model.Post;
+import org.example.model.Tag;
 import org.example.model.User;
 
 import javax.sql.DataSource;
@@ -10,6 +12,7 @@ import java.util.List;
 
 public class PostDAO implements PostDaoInterface {
     private final DataSource dataSource;
+    private final TagDAO tagDAO = new TagDAO();
 
     public PostDAO(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -93,6 +96,9 @@ public class PostDAO implements PostDaoInterface {
         user.setName(rs.getString("user_name"));
         user.setEmail(rs.getString("user_email"));
         post.setUser(user);
+
+        List<Tag> tags = tagDAO.getTagsByPostId(post.getId());
+        post.setTags(tags);
 
         return post;
     }

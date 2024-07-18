@@ -9,7 +9,6 @@ public class User {
     private String email;
 
     private List<Post> posts; // OneToMany relationship
-    private List<Tag> tags; // Many2Many relationship
 
     public User() {
     }
