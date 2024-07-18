@@ -173,16 +173,6 @@
                     </excludes>
                 </configuration>
             </plugin>
-
-
-            <!--                <reportSets>-->
-            <!--                    <reportSet>-->
-            <!--                        <reports>-->
-            <!--                            &lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
-            <!--                            <report>report</report>-->
-            <!--                        </reports>-->
-            <!--                    </reportSet>-->
-            <!--                </reportSets>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

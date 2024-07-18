@@ -24,18 +24,7 @@ public class PostDAO implements PostDaoInterface {
         stmt.setLong(1, id);
         ResultSet rs = stmt.executeQuery();
         if (rs.next()) {
-            Post post = new Post();
-            post.setId(rs.getLong("id"));
-            post.setTitle(rs.getString("title"));
-            post.setContent(rs.getString("content"));
-
-            User user = new User();
-            user.setId(rs.getLong("user_id"));
-            user.setName(rs.getString("user_name"));
-            user.setEmail(rs.getString("user_email"));
-            post.setUser(user);
-
-            return post;
+            createPostFromResultSet(rs);
         }
         return null;
     }
@@ -49,18 +38,7 @@ public class PostDAO implements PostDaoInterface {
                     "SELECT p.id, p.title, p.content, p.user_id, u.name as user_name, u.email as user_email " +
                             "FROM posts p JOIN users u ON p.user_id = u.id");
             while (rs.next()) {
-                Post post = new Post();
-                post.setId(rs.getLong("id"));
-                post.setTitle(rs.getString("title"));
-                post.setContent(rs.getString("content"));
-
-                User user = new User();
-                user.setId(rs.getLong("user_id"));
-                user.setName(rs.getString("user_name"));
-                user.setEmail(rs.getString("user_email"));
-                post.setUser(user);
-
-                posts.add(post);
+                posts.add(createPostFromResultSet(rs));
             }
         }
         return posts;
@@ -102,5 +80,20 @@ public class PostDAO implements PostDaoInterface {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         }
+    }
+
+    private Post createPostFromResultSet(ResultSet rs) throws SQLException {
+        Post post = new Post();
+        post.setId(rs.getLong("id"));
+        post.setTitle(rs.getString("title"));
+        post.setContent(rs.getString("content"));
+
+        User user = new User();
+        user.setId(rs.getLong("user_id"));
+        user.setName(rs.getString("user_name"));
+        user.setEmail(rs.getString("user_email"));
+        post.setUser(user);
+
+        return post;
     }
 }

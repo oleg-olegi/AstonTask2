@@ -1,5 +1,6 @@
 package org.example.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Post {
@@ -8,6 +9,7 @@ public class Post {
     private String content;
 
     private User user; // ManyToOne relationship
+    private List<Tag> tags; // Many2Many relationship
 
     public Post() {
     }
