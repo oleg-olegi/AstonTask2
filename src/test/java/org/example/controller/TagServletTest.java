@@ -375,4 +375,227 @@ public class TagServletTest {
 
         assertThrows(ServletException.class, () -> tagServlet.doDelete(request, response));
     }
+
+    @Test
+    public void testAddTagToPost_ValidRequest() throws IOException, ServletException, SQLException {
+        // Prepare request data
+        String json = "{\"postId\":1,\"tagId\":2}";
+        BufferedReader reader = new BufferedReader(new StringReader(json));
+
+        when(request.getPathInfo()).thenReturn("/addTagToPost");
+        when(request.getReader()).thenReturn(reader);
+
+        // Execute the method
+        tagServlet.doPost(request, response);
+
+        // Verify interactions and response
+        verify(tagService, times(1)).addTagToPost(2L, 1L);
+        verify(response, times(1)).setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    @Test
+    public void testDoGet_GetTagsByPostId_Success() throws ServletException, IOException, SQLException {
+        // Set up request
+        when(request.getPathInfo()).thenReturn("/1/posts");
+
+        // Mock the response writer
+        PrintWriter writer = mock(PrintWriter.class);
+        when(response.getWriter()).thenReturn(writer);
+
+        // Set up the service response
+        TagDTO tag1 = new TagDTO();
+        tag1.setId(1L);
+        tag1.setName("Tag1");
+
+        TagDTO tag2 = new TagDTO();
+        tag2.setId(2L);
+        tag2.setName("Tag2");
+
+        List<TagDTO> tags = Arrays.asList(tag1, tag2);
+        when(tagService.getTagsByPostId(1L)).thenReturn(tags);
+
+        // Call the method
+        tagServlet.doGet(request, response);
+
+        // Verify interactions and response
+        verify(tagService, times(1)).getTagsByPostId(1L);
+        verify(writer, times(1)).write(gson.toJson(tags));
+    }
+
+    @Test
+    public void testDoGet_NumberFormatException() throws ServletException, IOException, SQLException {
+        // Set up request
+        when(request.getPathInfo()).thenReturn("/abc/posts");
+        // Call the method
+        tagServlet.doGet(request, response);
+        // Verify interactions and response
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid tag ID format.");
+        verify(tagService, never()).getTagsByPostId(anyLong());
+    }
+
+    private void mockRequestReader(String json) throws IOException {
+        BufferedReader reader = mock(BufferedReader.class);
+        when(request.getReader()).thenReturn(reader);
+        when(reader.readLine()).thenReturn(json, (String) null);
+    }
+
+    @Test
+    public void testAddTagToPost_PostIdIsNull() throws IOException, ServletException, SQLException {
+        // Mock request data with null postId
+        String json = "{\"tagId\": 1}";
+        mockRequestReader(json);
+        when(request.getPathInfo()).thenReturn("/addTagToPost");
+        // Call the method
+        tagServlet.doPost(request, response);
+        // Verify response
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID and Tag ID are required.");
+        verify(tagService, never()).addTagToPost(anyLong(), anyLong());
+    }
+
+    @Test
+    public void testAddTagToPost_TagIdIsNull() throws IOException, ServletException, SQLException {
+        // Mock request data with null tagId
+        String json = "{\"postId\": 1}";
+        mockRequestReader(json);
+        when(request.getPathInfo()).thenReturn("/addTagToPost");
+        // Call the method
+        tagServlet.doPost(request, response);
+        // Verify response
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Post ID and Tag ID are required.");
+        verify(tagService, never()).addTagToPost(anyLong(), anyLong());
+    }
+
+    @Test
+    public void testAddTagToPost_BothIdsArePresent() throws IOException, ServletException, SQLException {
+        // Mock request data with both postId and tagId
+        String json = "{\"postId\": 1, \"tagId\": 1}";
+        mockRequestReader(json);
+        when(request.getPathInfo()).thenReturn("/addTagToPost");
+        // Call the method
+        tagServlet.doPost(request, response);
+        // Verify service call
+        verify(tagService, times(1)).addTagToPost(1L, 1L);
+        verify(response, times(1)).setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    private void mockRequestPathInfo(String pathInfo) {
+        when(request.getPathInfo()).thenReturn(pathInfo);
+    }
+
+    @Test
+    public void testDoDelete_RemoveTagFromPost() throws IOException, ServletException, SQLException {
+        // Set up path info to match the condition
+        String pathInfo = "/1/posts/2";
+        mockRequestPathInfo(pathInfo);
+        // No exception expected, so just verify method call
+        doNothing().when(tagService).removeTagFromPost(anyLong(), anyLong());
+        // Call the method
+        tagServlet.doDelete(request, response);
+        // Verify that the service method was called with correct parameters
+        verify(tagService, times(1)).removeTagFromPost(1L, 2L);
+        verify(response, times(1)).setStatus(HttpServletResponse.SC_NO_CONTENT);
+    }
+
+    @Test
+    public void testDoDelete_NullPathInfo() throws IOException, ServletException {
+        // Set up path info to be null
+        mockRequestPathInfo(null);
+        // Call the method
+        tagServlet.doDelete(request, response);
+        // Verify that the status is set to BAD_REQUEST
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Tag ID is required.");
+    }
+
+    private void mockRequestBody(String body) throws IOException {
+        BufferedReader reader = new BufferedReader(new StringReader(body));
+        when(request.getReader()).thenReturn(reader);
+    }
+
+
+    @Test
+    public void testDoPut_MissingName() throws IOException, ServletException, SQLException {
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName(null);
+        // Name is not set here
+        String requestBody = gson.toJson(tagDTO);
+        mockRequestBody(requestBody);
+        mockRequestPathInfo("/1");
+        // Simulate failure
+        tagServlet.doPut(request, response);
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name is required.");
+        verify(tagService, never()).update(any(TagDTO.class));
+    }
+
+    @Test
+    public void testDoPut_EmptyName() throws IOException, ServletException, SQLException {
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName("");
+        String requestBody = gson.toJson(tagDTO);
+        mockRequestBody(requestBody);
+        mockRequestPathInfo("/1");
+        // Simulate failure
+        tagServlet.doPut(request, response);
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name is required.");
+        verify(tagService, never()).update(any(TagDTO.class));
+    }
+
+    @Test
+    public void testDoPut_SQLException() throws IOException, ServletException, SQLException {
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName("Valid Tag");
+        String requestBody = gson.toJson(tagDTO);
+        mockRequestBody(requestBody);
+        mockRequestPathInfo("/1");
+        // Simulate SQLException
+        doThrow(new SQLException()).when(tagService).update(tagDTO);
+        tagServlet.doPut(request, response);
+        verify(response, never()).setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @Test
+    public void testDoPost_EmptyName() throws IOException, ServletException, SQLException {
+        // Prepare the JSON body for the request
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName("");  // Empty name
+        String requestBody = gson.toJson(tagDTO);
+        // Mock the request and response
+        when(request.getPathInfo()).thenReturn("/");
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestBody)));
+        // Call doPost
+        tagServlet.doPost(request, response);
+        // Verify response
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name is required.");
+        verify(tagService, never()).save(any(TagDTO.class));
+    }
+
+    @Test
+    public void testDoPost_NullName() throws IOException, ServletException, SQLException {
+        // Prepare the JSON body for the request
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName(null);  // Empty name
+        String requestBody = gson.toJson(tagDTO);
+        // Mock the request and response
+        when(request.getPathInfo()).thenReturn("/");
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestBody)));
+        // Call doPost
+        tagServlet.doPost(request, response);
+        // Verify response
+        verify(response, times(1)).sendError(HttpServletResponse.SC_BAD_REQUEST, "Name is required.");
+        verify(tagService, never()).save(any(TagDTO.class));
+            }
+
+    @Test
+    public void testDoPost_SQLException() throws IOException, ServletException, SQLException {
+        // Prepare the JSON body for the request
+        TagDTO tagDTO = new TagDTO();
+        tagDTO.setName("Valid Name");
+        String requestBody = gson.toJson(tagDTO);
+        // Mock the request and response
+        when(request.getPathInfo()).thenReturn("/");
+        when(request.getReader()).thenReturn(new BufferedReader(new StringReader(requestBody)));
+        // Configure the tagService to throw SQLException
+        doThrow(new SQLException("Database error")).when(tagService).save(any(TagDTO.class));
+        // Verify the behavior
+        assertThrows(ServletException.class, () -> tagServlet.doPost(request, response));
+    }
 }

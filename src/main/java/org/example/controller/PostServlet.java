@@ -53,7 +53,7 @@ public class PostServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        PostDTO postDTO = deserializeUserDTO(req);
+        PostDTO postDTO = deserializeDTO(req);
         try {
             if (postDTO.getContent() == null || postDTO.getContent().isEmpty() || postDTO.getTitle() == null || postDTO.getTitle().isEmpty()) {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Content or title are required.");
@@ -64,7 +64,7 @@ public class PostServlet extends HttpServlet {
         } catch (SQLException e) {
             throw new ServletException(e);
         }
-    }
+            }
 
 
     @Override
@@ -76,7 +76,7 @@ public class PostServlet extends HttpServlet {
         }
         try {
             Long id = Long.parseLong(pathInfo.split("/")[1]);
-            PostDTO postDTO = deserializeUserDTO(req);
+            PostDTO postDTO = deserializeDTO(req);
             postDTO.setId(id);  // Установите ID из пути в объект UserDTO
             if (postDTO.getContent() == null || postDTO.getContent().isEmpty() || postDTO.getTitle() == null || postDTO.getTitle().isEmpty()) {
                 resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Content or title are required.");
@@ -110,7 +110,7 @@ public class PostServlet extends HttpServlet {
     }
 
 
-    private PostDTO deserializeUserDTO(HttpServletRequest req) throws IOException {
+    private PostDTO deserializeDTO(HttpServletRequest req) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();
         String line;

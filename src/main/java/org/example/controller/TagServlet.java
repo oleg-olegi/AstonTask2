@@ -161,7 +161,7 @@ public class TagServlet extends HttpServlet {
         return gson.fromJson(sb.toString(), AddTagToPostRequest.class);
     }
 
-    private static class AddTagToPostRequest {
+    static class AddTagToPostRequest {
         private Long postId;
         private Long tagId;
 

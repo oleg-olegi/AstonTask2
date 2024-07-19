@@ -390,4 +390,63 @@ public class PostServletTest {
 
         assertThrows(ServletException.class, () -> postServlet.doDelete(request, response));
     }
+
+    @Test
+    public void testDoPost_ValidRequest() throws IOException, ServletException, SQLException {
+        // Prepare the request with a valid JSON
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        String json = "{\"id\":1,\"title\":\"Sample Title\",\"content\":\"Sample Content\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(json));
+
+        when(request.getReader()).thenReturn(reader);
+
+        // Execute the method
+        postServlet.doPost(request, response);
+
+        // Capture the status set on the response
+        ArgumentCaptor<Integer> statusCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(response).setStatus(statusCaptor.capture());
+        assertEquals(HttpServletResponse.SC_CREATED, (int) statusCaptor.getValue());
+
+        // Verify that savePost was called with the correct argument
+        ArgumentCaptor<PostDTO> postDTOCaptor = ArgumentCaptor.forClass(PostDTO.class);
+        verify(postService).savePost(postDTOCaptor.capture());
+        PostDTO capturedPostDTO = postDTOCaptor.getValue();
+        assertEquals("Sample Title", capturedPostDTO.getTitle());
+        assertEquals("Sample Content", capturedPostDTO.getContent());
+    }
+    @Test
+    public void testDoPost_InvalidRequest_MissingTitleOrContent() throws IOException, ServletException {
+        // Prepare the request with an invalid JSON (missing title)
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        String json = "{\"id\":1,\"title\":\"\",\"content\":\"Sample Content\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(json));
+
+        when(request.getReader()).thenReturn(reader);
+
+        // Execute the method
+        postServlet.doPost(request, response);
+
+        // Capture the error status set on the response
+        verify(response).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), anyString());
+    }
+
+    @Test
+    public void testDoPost_SQLException() throws IOException, ServletException, SQLException {
+        // Prepare the request with a valid JSON
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        HttpServletResponse response = mock(HttpServletResponse.class);
+        String json = "{\"id\":1,\"title\":\"Sample Title\",\"content\":\"Sample Content\"}";
+        BufferedReader reader = new BufferedReader(new StringReader(json));
+
+        when(request.getReader()).thenReturn(reader);
+
+        // Mock the savePost method to throw SQLException
+        doThrow(SQLException.class).when(postService).savePost(any(PostDTO.class));
+
+        // Execute the method and expect a ServletException
+        assertThrows(ServletException.class, () -> postServlet.doPost(request, response));
+    }
 }
