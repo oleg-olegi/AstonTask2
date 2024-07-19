@@ -121,7 +121,6 @@ public class UserServlet extends HttpServlet {
         }
     }
 
-
     private UserDTO deserializeUserDTO(HttpServletRequest req) throws IOException {
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = req.getReader();

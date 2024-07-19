@@ -18,18 +18,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
             <version>1.26.1</version>
@@ -139,12 +127,6 @@
         <finalName>my-rest-service</finalName>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.22.2</version>
-            </plugin>
-
-            <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.12</version>
@@ -155,7 +137,8 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
+                        <id>jcc-report</id>
+                        <phase>test</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -165,24 +148,24 @@
                     <excludes>
                         <exclude>org/example/dao/PostDaiInterface.class</exclude>
                         <exclude>org/example/dao/UserDaoInterface.class</exclude>
+                        <exclude>org/example/dao/TagDaoInterface.class</exclude>
                         <exclude>org/example/dto/PostDTO.class</exclude>
                         <exclude>org/example/dto/UserDTO.class</exclude>
+                        <exclude>org/example/dto/TagDTO.class</exclude>
                         <exclude>org/example/model/**</exclude>
                         <exclude>org/example/mapper/**</exclude>
                         <exclude>org/example/util/**</exclude>
                     </excludes>
                 </configuration>
+                <!--                <reportSets>-->
+                <!--                    <reportSet>-->
+                <!--                        <reports>-->
+                <!--                            &lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
+                <!--                            <report>report</report>-->
+                <!--                        </reports>-->
+                <!--                    </reportSet>-->
+                <!--                </reportSets>-->
             </plugin>
-
-
-            <!--                <reportSets>-->
-            <!--                    <reportSet>-->
-            <!--                        <reports>-->
-            <!--                            &lt;!&ndash; select non-aggregate reports &ndash;&gt;-->
-            <!--                            <report>report</report>-->
-            <!--                        </reports>-->
-            <!--                    </reportSet>-->
-            <!--                </reportSets>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

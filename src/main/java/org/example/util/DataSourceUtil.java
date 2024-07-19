@@ -9,7 +9,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class DataSourceUtil {
-    private static HikariDataSource dataSource;
+    private static final HikariDataSource dataSource;
 
     static {
         try {

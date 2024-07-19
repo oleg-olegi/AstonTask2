@@ -1,5 +1,6 @@
 package org.example.model;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Post {
@@ -9,10 +10,22 @@ public class Post {
 
     private User user; // ManyToOne relationship
 
+    private List<Tag> tags; // Many2Many relationship
+
     public Post() {
     }
 
-    public Post(long id, String title, String content, User user) {
+    public Post(Long id, String title, String content, User user) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.user = user;
+    }
+
+    public Post(Long l, String testTitle, String testContent) {
+        this.id = l;
+        this.title = testTitle;
+        this.content = testContent;
     }
 
     public Long getId() {
@@ -45,6 +58,14 @@ public class Post {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     @Override
