@@ -8,9 +8,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.junit.jupiter.TestcontainersExtension;
 
 
 import javax.sql.DataSource;
@@ -42,10 +44,12 @@ public class PostDAOTest {
     @BeforeAll
     public static void setUp() {
         HikariConfig config = new HikariConfig();
+        System.out.println(postgresContainer.getJdbcUrl());
         config.setJdbcUrl(postgresContainer.getJdbcUrl());
         config.setUsername(postgresContainer.getUsername());
         config.setPassword(postgresContainer.getPassword());
         config.setDriverClassName("org.postgresql.Driver");
+
         dataSource = new HikariDataSource(config);
         postDAO = new PostDAO(dataSource);
         userDAO = new UserDAO(dataSource);
@@ -64,6 +68,7 @@ public class PostDAOTest {
         config.setUsername(postgresContainer.getUsername());
         config.setPassword(postgresContainer.getPassword());
         config.setDriverClassName("org.postgresql.Driver");
+
         dataSource = new HikariDataSource(config);
         postDAO = new PostDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
