@@ -10,22 +10,26 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class DataSourceUtil {
-    private static final HikariDataSource dataSource;
+    private static HikariDataSource dataSource;
 
     static {
         try {
             Properties properties = loadProperties();
             HikariConfig config = new HikariConfig();
 
-            config.setJdbcUrl("localhost:60757/testdb");
-            config.setUsername("testUser");
-            config.setPassword("testPassword");
-            config.setDriverClassName("org.postgresql.Driver");
-
-//            config.setJdbcUrl(properties.getProperty("jdbc.url"));
-//            config.setUsername(properties.getProperty("jdbc.username"));
-//            config.setPassword(properties.getProperty("jdbc.password"));
-//            config.setDriverClassName(properties.getProperty("jdbc.driverClassName"));
+            // Настройка источника данных из файла свойств
+            String dbType = properties.getProperty("db.type");
+            if ("h2".equalsIgnoreCase(dbType)) {
+                // Конфигурация для H2
+                config.setJdbcUrl("jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1"); // in-memory H2
+                config.setDriverClassName("org.h2.Driver");
+            } else {
+                // Конфигурация для PostgreSQL
+                config.setJdbcUrl(properties.getProperty("jdbc.url"));
+                config.setUsername(properties.getProperty("jdbc.username"));
+                config.setPassword(properties.getProperty("jdbc.password"));
+                config.setDriverClassName(properties.getProperty("jdbc.driverClassName"));
+            }
 
             dataSource = new HikariDataSource(config);
         } catch (IOException e) {
@@ -48,4 +52,5 @@ public class DataSourceUtil {
     public static DataSource getDataSource() {
         return dataSource;
     }
+
 }

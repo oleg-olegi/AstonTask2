@@ -46,6 +46,7 @@ public class UserDAOTest {
         config.setUsername(postgresContainer.getUsername());
         config.setPassword(postgresContainer.getPassword());
         config.setDriverClassName("org.postgresql.Driver");
+
         dataSource = new HikariDataSource(config);
         userDAO = new UserDAO(dataSource);
         try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
