@@ -1,3 +1,4 @@
+
 package org.example.util;
 
 import com.zaxxer.hikari.HikariConfig;
@@ -15,10 +16,16 @@ public class DataSourceUtil {
         try {
             Properties properties = loadProperties();
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(properties.getProperty("jdbc.url"));
-            config.setUsername(properties.getProperty("jdbc.username"));
-            config.setPassword(properties.getProperty("jdbc.password"));
-            config.setDriverClassName(properties.getProperty("jdbc.driverClassName"));
+
+            config.setJdbcUrl("localhost:60757/testdb");
+            config.setUsername("testUser");
+            config.setPassword("testPassword");
+            config.setDriverClassName("org.postgresql.Driver");
+
+//            config.setJdbcUrl(properties.getProperty("jdbc.url"));
+//            config.setUsername(properties.getProperty("jdbc.username"));
+//            config.setPassword(properties.getProperty("jdbc.password"));
+//            config.setDriverClassName(properties.getProperty("jdbc.driverClassName"));
 
             dataSource = new HikariDataSource(config);
         } catch (IOException e) {
