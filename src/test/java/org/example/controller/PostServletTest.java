@@ -1,16 +1,27 @@
 package org.example.controller;
 
 import com.google.gson.Gson;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.example.dao.PostDAO;
+import org.example.dao.UserDAO;
 import org.example.dto.PostDTO;
 import org.example.service.PostService;
+import org.example.util.DataSourceUtil;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
+import javax.sql.DataSource;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -19,6 +30,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Testcontainers
 public class PostServletTest {
     @Mock
     private PostService postService;
@@ -33,17 +45,74 @@ public class PostServletTest {
     private PostServlet postServlet;
 
     private final Gson gson = new Gson();
+    @Container
+    public static PostgreSQLContainer<?> postgresContainer = new PostgreSQLContainer<>("postgres:latest")
+            .withDatabaseName("testdb")
+            .withUsername("testuser")
+            .withPassword("testpass");
+
+    private static DataSource dataSource;
+
+    @BeforeAll
+    public static void setUp() {
+
+        HikariConfig config = new HikariConfig();
+
+        config.setJdbcUrl(postgresContainer.getJdbcUrl());
+        config.setUsername(postgresContainer.getUsername());
+        config.setPassword(postgresContainer.getPassword());
+        config.setDriverClassName("org.postgresql.Driver");
+
+        dataSource = new HikariDataSource(config);
+
+        try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+            stmt.execute("CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(255), email VARCHAR(255))");
+            stmt.execute("CREATE TABLE posts (id SERIAL PRIMARY KEY, title VARCHAR(255), content VARCHAR(255), user_id INTEGER REFERENCES users(id))");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+//    @BeforeEach
+//    public void cleanData() {
+//        HikariConfig config = new HikariConfig();
+//        config.setJdbcUrl(postgresContainer.getJdbcUrl());
+//        config.setUsername(postgresContainer.getUsername());
+//        config.setPassword(postgresContainer.getPassword());
+//        config.setDriverClassName("org.postgresql.Driver");
+//
+//        dataSource = new HikariDataSource(config);
+//
+//        try (var connection = dataSource.getConnection(); var stmt = connection.createStatement()) {
+//            stmt.execute("DELETE FROM posts");
+//            stmt.execute("DELETE FROM users");
+//        } catch (SQLException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
+
+    @BeforeAll
+    public static void start() {
+        postgresContainer.start();
+    }
+
+
+    @AfterAll
+    public static void teardown() {
+        postgresContainer.stop();
+    }
 
     @BeforeEach
-    public void setUp() {
+    public void init() {
         MockitoAnnotations.openMocks(this);
     }
 
 
     @Test
-    public void testInit() throws ServletException {
-        ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
-        postServlet.init(servletConfig);
+    public void testInit() {
+
+        postServlet.init();
+
         assertNotNull(postService);
     }
 
@@ -416,6 +485,7 @@ public class PostServletTest {
         assertEquals("Sample Title", capturedPostDTO.getTitle());
         assertEquals("Sample Content", capturedPostDTO.getContent());
     }
+
     @Test
     public void testDoPost_InvalidRequest_MissingTitleOrContent() throws IOException, ServletException {
         // Prepare the request with an invalid JSON (missing title)

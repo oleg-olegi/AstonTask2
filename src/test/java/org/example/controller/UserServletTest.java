@@ -1,6 +1,7 @@
 package org.example.controller;
 
 import com.google.gson.Gson;
+import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.BufferedReader;
@@ -31,7 +33,6 @@ public class UserServletTest {
     @Mock
     private UserService userService;
 
-
     @Mock
     private HttpServletRequest request;
 
@@ -49,9 +50,9 @@ public class UserServletTest {
     }
 
     @Test
-    public void testInit() {
-        UserServlet userServlet = new UserServlet();
-        userServlet.init();
+    public void testInit() throws ServletException {
+        ServletConfig servletConfig = Mockito.mock(ServletConfig.class);
+        userServlet.init(servletConfig);
         assertNotNull(userServlet);
     }
 
